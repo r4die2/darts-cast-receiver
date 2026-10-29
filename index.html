@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>DartsCalc Pro — табло</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+  </head>
+  <body>
+    <main class="scoreboard" aria-live="polite">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark">D</span><span>DARTS<span class="brand-accent">CALC</span></span></div>
+        <div class="match-meta">
+          <span id="mode" class="mode">ДАРТС</span>
+          <span id="leg" class="leg"></span>
+        </div>
+      </header>
+
+      <section id="players" class="players" aria-label="Счёт игроков"></section>
+
+      <footer class="footer">
+        <span class="live-dot"></span>
+        <span id="status">Ожидание подключения к игре</span>
+        <span class="footer-mark">DARTSCALC PRO</span>
+      </footer>
+    </main>
+
+    <template id="player-template">
+      <article class="player-card">
+        <div class="player-heading">
+          <span class="turn-indicator" aria-hidden="true"></span>
+          <h1 class="player-name"></h1>
+          <span class="turn-label"></span>
+        </div>
+        <div class="stats">
+          <div class="stat stat-score">
+            <span class="stat-label">СЧЁТ</span>
+            <span class="stat-value score-value">—</span>
+          </div>
+          <div class="stat stat-remaining">
+            <span class="stat-label">ОСТАТОК</span>
+            <span class="stat-value remaining-value">—</span>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script src="receiver.js"></script>
+  </body>
+</html>
