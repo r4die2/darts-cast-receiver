@@ -1,6 +1,7 @@
 (() => {
   'use strict';
   const NAMESPACE = 'urn:x-cast:com.example.dartscalcpro.scoreboard';
+  const STORAGE_KEY = 'calcUrRate.scoreboard.v1';
   const root = document.getElementById('players'), template = document.getElementById('player-template');
   const status = document.getElementById('status'), leftLegs = document.getElementById('left-legs'), rightLegs = document.getElementById('right-legs');
   let previous = null, previewState = null;
@@ -55,13 +56,35 @@
       ),
     };
   }
-  function render(state) {
+  function isValidScoreboard(state) {
+    return state && state.type === 'scoreboard.update' &&
+      Array.isArray(state.players) && state.players.length > 0 && state.players.length <= 2;
+  }
+  function restoreSavedState() {
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+      const state = JSON.parse(saved);
+      if (isValidScoreboard(state)) render(state, true);
+    } catch (_) {
+      // Storage may be unavailable on some receiver devices; live casting still works.
+    }
+  }
+  function saveState(state) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (_) {
+      // Storage may be unavailable or full; live casting still works.
+    }
+  }
+  function render(state, restored = false) {
     if (!state || !Array.isArray(state.players)) return;
     state = normalise(state);
     const legs = state.legs;
     leftLegs.textContent=fmt(legs[0],'0'); rightLegs.textContent=fmt(legs[1],'0');
     const playing = state.status !== 'waiting' && !state.waitingForContinue;
-    status.textContent=playing?'ИДЁТ ИГРА':'ОЖИДАНИЕ ПРОДОЛЖЕНИЯ'; document.body.classList.toggle('is-live',playing);
+    status.textContent=restored?'СОХРАНЁННЫЙ СЧЁТ · ОЖИДАНИЕ ПОДКЛЮЧЕНИЯ':playing?'ИДЁТ ИГРА':'ОЖИДАНИЕ ПРОДОЛЖЕНИЯ';
+    document.body.classList.toggle('is-live',playing&&!restored);
     const oldPlayers=previous?.players||[];
     while(root.children.length>Math.min(state.players.length,2)) {
       const card=root.lastElementChild, animation=animations.get(card.querySelector('.remaining-value'));
@@ -89,8 +112,9 @@
     undoDart:(points=20)=>preview(s=>{const p=s.players.find(x=>x.current)||s.players[0];p.remaining+=Number(points);p.dartsLeft=Math.max(0,p.dartsLeft-3);delete p.lastVisit;}), finishLeg:(winner=0)=>preview(s=>{s.legs[Number(winner)||0]++;s.status='waiting';s.waitingForContinue=true;}),
     continue:()=>preview(s=>{s.status='playing';s.waitingForContinue=false;s.players.forEach(p=>{p.remaining=501;p.dartsLeft=0;delete p.lastVisit;});})
   });
-  function startReceiver(){if(!window.cast?.framework)return;const context=cast.framework.CastReceiverContext.getInstance();context.addCustomMessageListener(NAMESPACE,e=>{if(e.data?.type==='scoreboard.update')render(e.data);});context.start();}
+  function startReceiver(){if(!window.cast?.framework)return;const context=cast.framework.CastReceiverContext.getInstance();context.addCustomMessageListener(NAMESPACE,e=>{if(isValidScoreboard(e.data)){saveState(e.data);render(e.data);}});context.start();}
   window.addEventListener('load',()=>{
+    restoreSavedState();
     // The real receiver must never show fake match data.  Demo data is opt-in
     // so the same deployed page can be used for local visual checks.
     if (new URLSearchParams(window.location.search).has('preview')) {
