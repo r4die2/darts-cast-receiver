@@ -92,7 +92,10 @@
   }
   function isValidScoreboard(state) {
     return state && state.type === 'scoreboard.update' &&
-      Array.isArray(state.players) && state.players.length > 0 && state.players.length <= 2;
+      Array.isArray(state.players) && state.players.length > 0 && state.players.length <= 2 &&
+      (state.mode !== 'cricket' || (state.players.length === 2 && typeof state.usePoints === 'boolean' &&
+        state.players.every(player => Array.isArray(player.marks) && player.marks.length === 7 &&
+          player.marks.every(n => Number.isInteger(n) && n >= 0 && n <= 3))));
   }
   function restoreSavedState() {
     try {
@@ -113,6 +116,18 @@
   }
   function render(state, restored = false) {
     if (!state || !Array.isArray(state.players)) return;
+    if (state.mode === 'cricket' && !isValidScoreboard(state)) return;
+    if (window.CalcURateCricket?.render(state)) {
+      root.hidden = true;
+      legWin.hidden = true;
+      previousLegWon = false;
+      updateLegScore(leftLegs,state.legs?.[0] ?? 0,0,false);
+      updateLegScore(rightLegs,state.legs?.[1] ?? 0,1,false);
+      status.textContent = restored ? 'СОХРАНЁННЫЙ СЧЁТ · ОЖИДАНИЕ ПОДКЛЮЧЕНИЯ' : state.waitingForContinue ? 'ЛЕГ ЗАВЕРШЁН' : 'ИДЁТ ИГРА';
+      document.body.classList.toggle('is-live',!restored && !state.waitingForContinue);
+      previous = null;
+      return;
+    }
     state = normalise(state);
     const legs = state.legs;
     const playing = state.status !== 'waiting' && !state.waitingForContinue;
@@ -211,7 +226,9 @@
     // so the same deployed page can be used for local visual checks.
     if (new URLSearchParams(window.location.search).has('preview')) {
       const previewMode=new URLSearchParams(window.location.search).get('preview');
-      if(previewMode==='bot-leg') {
+      if(previewMode==='cricket' || previewMode==='cricket-no-points') {
+        window.CalcURatePreview.set(window.CalcURateCricket.sample(previewMode==='cricket'));
+      } else if(previewMode==='bot-leg') {
         window.CalcURatePreview.set({
           type:'scoreboard.update',status:'playing',legs:[1,0],isBotMode:true,
           players:[

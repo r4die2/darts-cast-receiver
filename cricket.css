@@ -1,0 +1,37 @@
+/* Seven fixed rows use the available height; no part of the board scrolls. */
+body.is-cricket { --green:#86d986; --muted:#d0d0d0; color:#f7faf4; background:radial-gradient(ellipse at 75% 10%,#1b2a20,transparent 65%),#111512; }
+.is-cricket .scoreboard { width:min(118vh,86vw); margin:0 auto; padding:3vh 0; gap:1.8vh; grid-template-rows:8vh minmax(0,1fr) 2vh; }
+.is-cricket .scoreline { font-size:6vh; border-width:2px; border-radius:16px; }
+.is-cricket .footer { font-size:1.5vh; }
+.cricket-board { --sector-size:7.2vh; min-height:0; display:grid; grid-template-rows:2.5vh 15vh minmax(0,1fr) auto; gap:1.2vh; }
+.cricket-heading { display:flex; justify-content:space-between; align-items:center; font-size:1.7vh; font-weight:700; color:var(--muted); letter-spacing:.12em; }
+.cricket-mode { color:var(--green); }
+.cricket-players { display:grid; grid-template-columns:1fr 1fr; gap:calc(var(--sector-size) + 1.6vh); min-height:0; }
+.cricket-player { position:relative; overflow:hidden; isolation:isolate; min-width:0; padding:1.2vh 1.6vw; border:1px solid #ffffff38; border-radius:16px; background:linear-gradient(135deg,#ffffff12,#ffffff06); display:grid; grid-template-columns:1fr auto; grid-template-rows:4.4vh 2.4vh 1fr; align-items:center; gap:0 .8vw; }
+.cricket-player.is-active { border-color:var(--green); background:linear-gradient(125deg,#416a4966,#416a4933); box-shadow:inset 0 0 3vh #86d98609; }
+.cricket-player > * { position:relative; z-index:1; }
+.cricket-player.is-active::before { content:''; position:absolute; z-index:0; pointer-events:none; inset:-35% -75%; background:linear-gradient(105deg,transparent 36%,#ffffff06 43%,#ffffff26 49%,#ffffff09 55%,transparent 62%); opacity:.5; animation:shimmer 10s ease-in-out infinite alternate; }
+.cricket-name { grid-column:1/-1; font-size:3.5vh; font-weight:700; margin:0; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cricket-turn { grid-column:1/-1; font-size:1.5vh; color:var(--green); min-height:1em; }
+.cricket-points { font-size:3.8vh; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.cricket-darts { font-size:1.8vh; color:var(--muted); text-align:right; white-space:nowrap; }
+.cricket-grid { min-height:0; display:grid; grid-template-rows:repeat(7,minmax(0,1fr)); gap:.65vh; }
+.cricket-row { display:grid; grid-template-columns:minmax(0,1fr) var(--sector-size) minmax(0,1fr); column-gap:.8vh; align-items:center; min-height:0; }
+.cricket-side { display:flex; align-items:center; justify-content:space-between; height:100%; min-height:0; min-width:0; padding:0 1.5vh; border:1px solid #ffffff38; border-radius:16px; background:linear-gradient(135deg,#ffffff10,#ffffff06); box-shadow:0 2px 6px #00000020; }
+.cricket-side-0 { grid-column:1; grid-row:1; }
+.cricket-side-1 { grid-column:3; grid-row:1; flex-direction:row-reverse; }
+.cricket-symbol { display:flex; align-items:center; justify-content:center; height:100%; width:5.8vh; flex-shrink:0; }
+.cricket-mark { width:5.8vh; height:5.8vh; max-height:90%; fill:none; stroke:#f7faf4; stroke-width:5.44; stroke-linecap:round; stroke-linejoin:round; }
+.cricket-mark.marks-3 { stroke:#d84a3b; }
+.cricket-hit-count { min-width:2ch; font-size:2.7vh; font-weight:700; font-variant-numeric:tabular-nums; color:var(--muted); }
+.cricket-side-0 .cricket-hit-count { text-align:left; }
+.cricket-side-1 .cricket-hit-count { text-align:right; }
+.has-hits .cricket-hit-count { color:var(--green); }
+.cricket-sector { grid-column:2; grid-row:1; display:flex; align-items:center; justify-content:center; width:var(--sector-size); height:var(--sector-size); font-size:3.6vh; line-height:1; font-weight:800; font-variant-numeric:tabular-nums; color:#f7faf4; border:.63vh solid #4d974d; border-radius:50%; }
+.cricket-sector.is-opened { border-color:#d84a3b; }
+.cricket-bull-dot { width:40%; height:40%; background:#d84a3b; border-radius:50%; }
+.cricket-result { text-align:center; font-size:1.8vh; color:var(--green); font-weight:700; }
+.without-points { --sector-size:7.8vh; grid-template-rows:2.5vh 11vh minmax(0,1fr) auto; }
+.without-points .cricket-player { grid-template-rows:4vh 2.2vh 1fr; }
+.without-points .cricket-darts { grid-column:1/-1; text-align:left; }
+@media (prefers-reduced-motion:reduce) { .cricket-player.is-active::before { animation:none; opacity:.15; } }
