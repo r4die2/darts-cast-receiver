@@ -65,6 +65,7 @@
     board.classList.toggle('without-points', !points);
     board.querySelector('.cricket-rules').textContent = points ? 'С НАБОРОМ ОЧКОВ' : 'БЕЗ ОЧКОВ';
     const winner = state.waitingForContinue === true && (state.winnerIndex === 0 || state.winnerIndex === 1) ? state.winnerIndex : null;
+    board.classList.toggle('has-winner', winner !== null);
     const cards = board.querySelectorAll('.cricket-player');
     state.players.forEach((player, index) => {
       const card = cards[index];
@@ -94,7 +95,15 @@
     });
     const result = board.querySelector('.cricket-result');
     result.hidden = winner === null;
-    result.textContent = winner === null ? '' : 'ЛЕГ ЗАВЕРШЁН · ОЖИДАНИЕ ПРОДОЛЖЕНИЯ';
+    result.replaceChildren();
+    if (winner !== null) {
+      const player = state.players[winner];
+      const name = typeof player.name === 'string' && player.name.trim() ? player.name.trim() : `Игрок ${winner + 1}`;
+      result.append(make('div', 'cricket-win-title', 'ПОБЕДИТЕЛЬ ЛЕГА'),
+        make('div', 'cricket-win-name', name),
+        make('div', 'cricket-win-score', `${count(state.legs?.[0])} : ${count(state.legs?.[1])}`),
+        make('div', 'cricket-win-wait', 'ОЖИДАНИЕ ПРОДОЛЖЕНИЯ НА ТЕЛЕФОНЕ'));
+    }
     return true;
   }
   const sample = (usePoints = true) => ({
