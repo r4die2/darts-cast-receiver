@@ -27,6 +27,15 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; opacity
 .leg-win-label { margin:clamp(12px,2vh,24px) 0 0; color:var(--green); font-size:clamp(20px,2.5vw,42px); font-weight:900; letter-spacing:.18em; }
 .winner-name { margin:clamp(12px,2vh,24px) 0 0; overflow:hidden; color:#fff; font-size:clamp(44px,7vw,112px); font-weight:900; line-height:1; text-overflow:ellipsis; white-space:nowrap; text-shadow:0 0 36px rgba(101,233,121,.2); }
 .winner-visit { margin:clamp(18px,3vh,34px) 0 0; color:var(--green); font-size:clamp(16px,1.8vw,28px); font-weight:800; letter-spacing:.08em; }
+.leg-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:2vw; margin:1.5vh auto 0; width:min(100%,820px); }
+.leg-stats p { display:grid; gap:.35vh; margin:0; padding:1vh; border:1px solid rgba(255,255,255,.16); border-radius:12px; font-size:clamp(12px,1.8vh,24px); }
+.leg-stats span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted); }
+.leg-stats strong { color:var(--green); }
+.leg-stats small { font-size:.85em; color:var(--muted); }
+.is-tournament-leg .trophy { width:auto; height:7vh; min-height:26px; max-height:76px; }
+.is-tournament-leg .leg-win-label { margin:1vh 0 0; font-size:clamp(12px,2vh,28px); }
+.is-tournament-leg .winner-name { margin:1vh 0 0; font-size:clamp(26px,6vh,84px); }
+.is-tournament-leg .winner-visit { margin:1vh 0 0; font-size:clamp(10px,1.8vh,24px); }
 .elo-results { display:grid; gap:clamp(8px,1.2vh,14px); margin:clamp(16px,2.5vh,30px) auto 0; width:min(100%,680px); }
 .elo-result { display:flex; justify-content:space-between; align-items:center; gap:20px; margin:0; padding:clamp(9px,1.4vh,16px) clamp(14px,2vw,24px); border:1px solid rgba(255,255,255,.16); border-radius:14px; background:rgba(255,255,255,.045); font-size:clamp(16px,1.8vw,28px); font-weight:800; }
 .elo-player { overflow:hidden; color:var(--muted); text-overflow:ellipsis; white-space:nowrap; }
@@ -42,6 +51,18 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; opacity
 .bot-visit { padding:5px 9px; border-radius:999px; background:rgba(255,255,255,.09); color:#fff; font-size:clamp(12px,1.2vw,18px); font-weight:800; font-variant-numeric:tabular-nums; }
 .last-visit { position:absolute; left:50%; bottom:0; transform:translateX(-50%); color:rgba(244,247,243,.48); font-size:clamp(28px,3vw,56px); line-height:1; white-space:nowrap; font-weight:700; }
 .footer { align-self:start; display:flex; align-items:center; gap:.65em; color:#d6d9d6; font-size:clamp(10px,.85vw,16px); font-weight:800; letter-spacing:.04em; }.live-dot { width:.75em; height:.75em; border-radius:50%; background:#858986; }.is-live .live-dot { background:var(--green); box-shadow:0 0 11px rgba(101,233,121,.75); }
+#tournament-board { position:fixed; inset:0; padding:4vh 5vw 6vh; background:radial-gradient(ellipse at 48% 38%,#202321,#121313); overflow:hidden; }
+#tournament-board h1 { margin:0; font-size:clamp(28px,3vw,54px); }
+#tournament-board h2 { margin:1vh 0; color:var(--green); font-size:clamp(20px,2vw,36px); }
+#tournament-board p { margin:1vh 0; color:var(--muted); font-size:clamp(16px,1.5vw,27px); }
+#tournament-board small { color:var(--muted); font-size:clamp(13px,1vw,20px); }
+.tournament-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:2vw; margin:3vh 0; }
+.tournament-column h3 { margin:0 0 1.5vh; color:var(--green); font-size:clamp(16px,1.6vw,30px); }
+.tournament-match { margin-bottom:1.5vh; padding:1vh 1vw; border:2px solid rgba(255,255,255,.25); border-radius:18px; background:linear-gradient(145deg,#292929,#191a1a); }
+.tournament-player { display:flex; justify-content:space-between; gap:1vw; padding:.6vh 0; font-size:clamp(16px,1.6vw,30px); }
+.tournament-player span { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.tournament-player strong { font-variant-numeric:tabular-nums; }
+.tournament-player.winner { color:var(--green); }
 .reconnect-status { display:none; position:fixed; left:5vw; bottom:2vh; z-index:30; align-items:center; gap:.65em; padding:.4em .7em; border-radius:.6em; background:rgba(18,19,19,.92); color:#ffd480; font-size:clamp(10px,1vw,18px); font-weight:800; letter-spacing:.04em; }
 .reconnect-status::before { content:''; width:.75em; height:.75em; flex:none; border-radius:50%; background:currentColor; }
 .is-reconnecting .reconnect-status { display:flex; }

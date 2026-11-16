@@ -19,23 +19,42 @@
     if (!state || !board) return;
     const t = state.tournament, names = t.participants;
     board.replaceChildren(element('h1', t.name), element('h2', t.winner === null ? t.stage : `Победитель: ${names[t.winner]}`));
-    const rows = [];
-    if (t.reviewLeg) board.append(element('p', 'Лег завершён · ожидается подтверждение результата'));
+    if (typeof t.lastResult === 'string' && t.lastResult) board.append(element('p', `Последний матч: ${t.lastResult}`));
     if (t.currentMatch) {
       const current = t.matches.find(m => m.id === t.currentMatch);
-      if (current) rows.push(`Сейчас: ${names[current.first]} — ${names[current.second]} · ` + state.players.map(p => `${p.name}: ${p.remaining}`).join(' / '));
+      if (current) board.append(element('p', `Следующий матч: ${names[current.first]} — ${names[current.second]}`));
     }
-    t.tables.forEach((table, i) => {
-      rows.push(`Таблица ${i + 1} · победы / счёт / разница`);
-      table.forEach(row => rows.push(`${names[row.player]} · ${row.wins} / ${row.for}:${row.against} / ${row.difference}`));
+    const groups = new Map();
+    t.matches.forEach(m => {
+      const label = m.label || 'Матч';
+      if (!groups.has(label)) groups.set(label, []);
+      groups.get(label).push(m);
     });
-    rows.push('Сетка и результаты');
-    t.matches.forEach(m => rows.push(`${m.label || 'Матч'} · ${names[m.first]} — ${names[m.second]} · ${m.score}`));
-    if (t.automaticAdvances?.length) rows.push('Проходы без игры: ' + t.automaticAdvances.map(i => names[i]).join(', '));
-    const pages = Math.max(1, Math.ceil(rows.length / 10));
+    const columns = [...groups.entries()].flatMap(([label, matches]) => {
+      const result = [];
+      for (let i = 0; i < matches.length; i += 4) result.push([label, matches.slice(i, i + 4)]);
+      return result;
+    });
+    const pages = Math.max(1, Math.ceil(columns.length / 3));
     page %= pages;
-    rows.slice(page * 10, page * 10 + 10).forEach(row => board.append(element('p', row)));
-    board.append(element('small', `Страница ${page + 1} / ${pages}`));
+    const grid = element('div', ''); grid.className = 'tournament-grid';
+    columns.slice(page * 3, page * 3 + 3).forEach(([label, matches]) => {
+      const column = element('div', ''); column.className = 'tournament-column';
+      column.append(element('h3', label));
+      matches.forEach(m => {
+        const card = element('div', ''); card.className = 'tournament-match';
+        const scores = String(m.score || '—').match(/^(\\d+)\\s*:\\s*(\\d+)/);
+        [m.first, m.second].forEach((id, index) => {
+          const row = element('div', ''); row.className = 'tournament-player';
+          row.append(element('span', names[id]), element('strong', scores ? scores[index + 1] : '—'));
+          if (scores && Number(scores[index + 1]) > Number(scores[2 - index])) row.classList.add('winner');
+          card.append(row);
+        });
+        column.append(card);
+      });
+      grid.append(column);
+    });
+    board.append(grid, element('small', `Страница ${page + 1} / ${pages}`));
   }
   window.CalcURateTournament = {
     valid,

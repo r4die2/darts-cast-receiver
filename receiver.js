@@ -177,6 +177,22 @@
       winnerVisit.hidden=!hasVisit;
       winnerVisit.textContent=hasVisit?`ПОБЕДНЫЙ ПОДХОД · ${fmt(winner.lastVisit)} ОЧКОВ`:'';
     }
+    document.body.classList.toggle('is-tournament-leg', legWon && state.tournamentGame === true);
+    const legStats = document.getElementById('leg-stats');
+    if (legStats) {
+      legStats.hidden = !legWon || state.tournamentGame !== true;
+      legStats.replaceChildren();
+      if (!legStats.hidden) state.players.forEach(player => {
+        const row = document.createElement('p'), name = document.createElement('span');
+        const average = document.createElement('strong'), darts = document.createElement('small');
+        name.textContent = player.name || 'Игрок';
+        average.textContent = `AVG за лег ${fmt(player.average, '0.0')}`;
+        darts.textContent = `Дротики · ${fmt(player.darts, '0')}`;
+        row.append(name); row.append(average); row.append(darts); legStats.append(row);
+      });
+    }
+    const winnerLabel = document.getElementById('winner-label');
+    if (winnerLabel) winnerLabel.textContent = state.completion || 'ЛЕГ ВЫИГРАН';
     const showEloChanges=legWon&&state.ranked===true&&state.players.length===2&&
       state.players.every(player=>!player.isBot&&!player.bot&&typeof player.eloChange==='number'&&Number.isFinite(player.eloChange));
     eloResults.hidden=!showEloChanges;
@@ -212,7 +228,12 @@
         visits.append(visit);
       });
     }
-    status.textContent=restored?'СОХРАНЁННЫЙ СЧЁТ · ОЖИДАНИЕ ПОДКЛЮЧЕНИЯ':legWon?'ЛЕГ ВЫИГРАН':playing?'ИДЁТ ИГРА':'ОЖИДАНИЕ ПРОДОЛЖЕНИЯ';
+    status.textContent=restored?'СОХРАНЁННЫЙ СЧЁТ · ОЖИДАНИЕ ПОДКЛЮЧЕНИЯ':legWon?(state.completion||'ЛЕГ ВЫИГРАН'):playing?'ИДЁТ ИГРА':'ОЖИДАНИЕ ПРОДОЛЖЕНИЯ';
+    if (state.tournamentGame === true) {
+      const context = [state.tournamentTitle, state.tournamentStage].filter(value => typeof value === 'string' && value);
+      if (context.length) status.textContent += ` · ${context.join(' · ')}`;
+    }
+    if (!restored && typeof state.matchLabel === 'string' && state.matchLabel) status.textContent += ` · ${state.matchLabel}`;
     document.body.classList.toggle('is-live',playing&&!restored);
     const oldPlayers=previous?.players||[];
     while(root.children.length>Math.min(state.players.length,2)) {
