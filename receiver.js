@@ -91,6 +91,7 @@
     };
   }
   function isValidScoreboard(state) {
+    if (state?.mode === 'tournament' && !window.CalcURateTournament?.valid(state)) return false;
     return state && state.type === 'scoreboard.update' &&
       Array.isArray(state.players) && state.players.length > 0 && state.players.length <= 2 &&
       (state.mode !== 'cricket' || (state.players.length === 2 && typeof state.usePoints === 'boolean' &&
@@ -102,7 +103,10 @@
       const saved = window.localStorage.getItem(STORAGE_KEY);
       if (!saved) return;
       const state = JSON.parse(saved);
-      if (isValidScoreboard(state)) render(state, true);
+      if (isValidScoreboard(state)) {
+        render(state, true);
+        showReconnecting();
+      }
     } catch (_) {
       // Storage may be unavailable on some receiver devices; live casting still works.
     }
@@ -114,8 +118,26 @@
       // Storage may be unavailable or full; live casting still works.
     }
   }
+  function showReconnecting() {
+    // Keep the current DOM and saved snapshot; only the connection status changes.
+    document.body.classList.add('is-reconnecting');
+    document.body.classList.remove('is-live');
+    status.textContent = 'ПЕРЕПОДКЛЮЧЕНИЕ…';
+  }
   function render(state, restored = false) {
     if (!state || !Array.isArray(state.players)) return;
+    if ((state.mode === 'tournament' || state.mode === 'cricket') && !isValidScoreboard(state)) return;
+    // A connected sender is not enough: only a complete, accepted snapshot is live.
+    document.body.classList.remove('is-reconnecting');
+    if (state.mode === 'tournament') {
+      if (!isValidScoreboard(state)) return;
+      window.CalcURateCricket?.render(state);
+      if (window.CalcURateTournament?.render(state)) {
+        root.hidden = true; legWin.hidden = true; previousLegWon = false; previous = null;
+        status.textContent = restored ? 'СОХРАНЁННЫЙ ТУРНИР' : 'ТРАНСЛЯЦИЯ ТУРНИРА';
+        return;
+      }
+    } else window.CalcURateTournament?.render(state);
     if (state.mode === 'cricket' && !isValidScoreboard(state)) return;
     if (window.CalcURateCricket?.render(state)) {
       root.hidden = true;
@@ -219,7 +241,47 @@
     undoDart:(points=20)=>preview(s=>{const p=s.players.find(x=>x.current)||s.players[0];p.remaining+=Number(points);p.dartsLeft=Math.max(0,p.dartsLeft-3);delete p.lastVisit;}), finishLeg:(winner=0)=>preview(s=>{const index=Math.max(0,Math.min(s.players.length-1,Number(winner)||0));s.legs[index]++;s.players[index].remaining=0;s.status='waiting';s.waitingForContinue=true;s.ranked=!s.isBotMode;s.players.forEach((player,i)=>{if(!s.isBotMode){delete player.isBot;delete player.bot;player.name=i===index?'PUSHKA':'Рейтинговый соперник';player.eloChange=i===index?3.5:-3.5;}});}),
     continue:()=>preview(s=>{s.status='playing';s.waitingForContinue=false;s.players.forEach(p=>{p.remaining=501;p.dartsLeft=0;delete p.lastVisit;});})
   });
-  function startReceiver(){if(!window.cast?.framework)return;const context=cast.framework.CastReceiverContext.getInstance();context.addCustomMessageListener(NAMESPACE,e=>{if(isValidScoreboard(e.data)){saveState(e.data);render(e.data);}});context.start();}
+  const assemblies = new Map();
+  const revisions = new Map();
+  function acceptMessage(message) {
+    if (message?.type === 'scoreboard.chunk') {
+      if (message.version !== 1 || typeof message.id !== 'string' || message.id.length > 100 ||
+          !Number.isInteger(message.total) || message.total < 1 || message.total > 4096 ||
+          !Number.isInteger(message.index) || message.index < 0 || message.index >= message.total ||
+          typeof message.data !== 'string' || message.data.length > 6000) return;
+      if (!assemblies.has(message.id)) {
+        if (assemblies.size >= 4) assemblies.delete(assemblies.keys().next().value);
+        assemblies.set(message.id, {total:message.total, parts:new Map()});
+      }
+      const assembly = assemblies.get(message.id);
+      if (assembly.total !== message.total) { assemblies.delete(message.id); return; }
+      assembly.parts.set(message.index, message.data);
+      if (assembly.parts.size !== assembly.total) return;
+      assemblies.delete(message.id);
+      try { message = JSON.parse(Array.from({length:assembly.total}, (_, i) => assembly.parts.get(i)).join('')); }
+      catch (_) { return; }
+    }
+    if (!isValidScoreboard(message)) return;
+    if (message.mode === 'tournament') {
+      const t = message.tournament;
+      if ((revisions.get(t.id) ?? -1) > t.revision) return;
+      if (revisions.size > 32) revisions.clear();
+      revisions.set(t.id, t.revision);
+    }
+    saveState(message); render(message);
+  }
+  function startReceiver() {
+    if (!window.cast?.framework) return;
+    const context = cast.framework.CastReceiverContext.getInstance();
+    context.addCustomMessageListener(NAMESPACE, e => acceptMessage(e.data));
+    context.addEventListener(cast.framework.system.EventType.SENDER_DISCONNECTED, () => {
+      if (context.getSenders().length === 0) showReconnecting();
+    });
+    window.addEventListener('offline', showReconnecting);
+    // This is a non-media app: keep the tab loaded while the phone reconnects.
+    // Keep the default sender heartbeat timeout so connection loss is detected.
+    context.start({ disableIdleTimeout: true });
+  }
   window.addEventListener('load',()=>{
     restoreSavedState();
     // The real receiver must never show fake match data.  Demo data is opt-in

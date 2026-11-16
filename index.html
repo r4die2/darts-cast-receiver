@@ -5,6 +5,7 @@
   <meta name="color-scheme" content="dark"><title>CalcURate — табло</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="cricket.css">
+  <link rel="stylesheet" href="tournament.css">
   <script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
 </head>
 <body>
@@ -28,8 +29,9 @@
         <div id="bot-visits" class="bot-visits" aria-label="Подходы бота"></div>
       </section>
     </section>
-    <footer class="footer"><span id="live-dot" class="live-dot"></span><span id="status">ОЖИДАНИЕ ПОДКЛЮЧЕНИЯ</span></footer>
+    <footer class="footer"><span id="live-dot" class="live-dot"></span><span id="status" role="status">ОЖИДАНИЕ ПОДКЛЮЧЕНИЯ</span></footer>
   </main>
+  <div class="reconnect-status" role="status">ПЕРЕПОДКЛЮЧЕНИЕ…</div>
   <template id="player-template">
     <article class="player-card">
       <header class="player-heading"><h1 class="player-name"></h1><span class="elo"></span></header>
@@ -38,6 +40,7 @@
     </article>
   </template>
   <script src="cricket.js"></script>
+  <script src="tournament.js"></script>
   <script src="receiver.js"></script>
 </body>
 </html>
