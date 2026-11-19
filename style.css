@@ -23,6 +23,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; opacity
 .player-footer { padding-top:clamp(16px,2vh,30px); border-top:2px solid rgba(238,242,238,.82); font-size:clamp(19px,2vw,38px); font-weight:800; }.darts { display:inline-flex; align-items:center; gap:.38em; white-space:nowrap; }.dart-icon { width:1.15em; height:1.15em; flex:none; fill:none; stroke:var(--green); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }.is-waiting .dart-icon { stroke:#d2d6d3; }
 .leg-win { align-self:center; justify-self:center; width:min(100%,1000px); text-align:center; }
 .leg-win.is-entering { animation:win-arrive .8s cubic-bezier(.2,.8,.25,1) both; }
+.is-resuming { animation:win-arrive .8s ease both; }
+@media (prefers-reduced-motion:reduce) { .is-resuming { animation:none; } }
 .trophy { width:clamp(64px,8vw,132px); height:auto; fill:none; stroke:var(--green); stroke-width:3; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 0 24px rgba(101,233,121,.34)); }
 .leg-win-label { margin:clamp(12px,2vh,24px) 0 0; color:var(--green); font-size:clamp(20px,2.5vw,42px); font-weight:900; letter-spacing:.18em; }
 .winner-name { margin:clamp(12px,2vh,24px) 0 0; overflow:hidden; color:#fff; font-size:clamp(44px,7vw,112px); font-weight:900; line-height:1; text-overflow:ellipsis; white-space:nowrap; text-shadow:0 0 36px rgba(101,233,121,.2); }

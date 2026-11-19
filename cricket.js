@@ -65,7 +65,14 @@
     board.classList.toggle('without-points', !points);
     board.querySelector('.cricket-rules').textContent = points ? 'С НАБОРОМ ОЧКОВ' : 'БЕЗ ОЧКОВ';
     const winner = state.waitingForContinue === true && (state.winnerIndex === 0 || state.winnerIndex === 1) ? state.winnerIndex : null;
+    const resuming = board.classList.contains('has-winner') && winner === null;
     board.classList.toggle('has-winner', winner !== null);
+    if (resuming) {
+      const grid = board.querySelector('.cricket-grid');
+      grid.classList.remove('is-resuming');
+      void grid.offsetWidth;
+      grid.classList.add('is-resuming');
+    }
     const cards = board.querySelectorAll('.cricket-player');
     state.players.forEach((player, index) => {
       const card = cards[index];
@@ -75,7 +82,7 @@
       card.querySelector('.cricket-turn').textContent = winner === index ? 'ПОБЕДИТЕЛЬ ЛЕГА' : player.current === true && winner === null ? 'СЕЙЧАС БРОСАЕТ' : ' ';
       card.querySelector('.cricket-points').textContent = `${count(player.points)} ОЧКОВ`;
       card.querySelector('.cricket-points').hidden = !points;
-      card.querySelector('.cricket-darts').textContent = `ДРОТИКИ · ${count(player.darts)}`;
+      card.querySelector('.cricket-darts').textContent = `МЕТКИ · ${count(player.darts)}`;
     });
     const rows = board.querySelectorAll('.cricket-row');
     sectors.forEach((sector, index) => {

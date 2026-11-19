@@ -92,6 +92,7 @@
   }
   function isValidScoreboard(state) {
     if (state?.mode === 'tournament' && !window.CalcURateTournament?.valid(state)) return false;
+    if (state?.type === 'scoreboard.update' && state.mode === 'idle') return Array.isArray(state.players) && state.players.length === 0;
     return state && state.type === 'scoreboard.update' &&
       Array.isArray(state.players) && state.players.length > 0 && state.players.length <= 2 &&
       (state.mode !== 'cricket' || (state.players.length === 2 && typeof state.usePoints === 'boolean' &&
@@ -105,7 +106,7 @@
       const state = JSON.parse(saved);
       if (isValidScoreboard(state)) {
         render(state, true);
-        showReconnecting();
+        if (state.mode !== 'idle') showReconnecting();
       }
     } catch (_) {
       // Storage may be unavailable on some receiver devices; live casting still works.
@@ -129,6 +130,19 @@
     if ((state.mode === 'tournament' || state.mode === 'cricket') && !isValidScoreboard(state)) return;
     // A connected sender is not enough: only a complete, accepted snapshot is live.
     document.body.classList.remove('is-reconnecting');
+    const waiting = document.getElementById('waiting-game');
+    const scoreline = document.querySelector('.scoreline');
+    if (state.mode === 'idle') {
+      window.CalcURateCricket?.render(state);
+      window.CalcURateTournament?.render(state);
+      root.hidden = true; legWin.hidden = true;
+      waiting.hidden = false; scoreline.hidden = true;
+      document.body.classList.remove('is-live');
+      status.textContent = 'ОЖИДАНИЕ ИГРЫ';
+      previous = null; previousLegWon = false;
+      return;
+    }
+    waiting.hidden = true; scoreline.hidden = false;
     if (state.mode === 'tournament') {
       if (!isValidScoreboard(state)) return;
       window.CalcURateCricket?.render(state);
@@ -163,6 +177,11 @@
       legWin.classList.add('is-entering');
     } else if (!legWon) {
       legWin.classList.remove('is-entering');
+    }
+    if (previousLegWon && !legWon && !restored) {
+      root.classList.remove('is-resuming');
+      void root.offsetWidth;
+      root.classList.add('is-resuming');
     }
     previousLegWon = legWon;
     const animateLegScore=legWon&&!restored&&previous!==null;
